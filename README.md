@@ -30,10 +30,11 @@ types.
 - **Dashboard**: snippets appear as compact preview cards in the left sidebar,
   grouped by folder; clicking one (or hitting “+ Snippet”) opens the editor in
   the right pane. Each snippet has a name, text, an optional global hotkey
-  (click the hotkey field and press a combo — needs Cmd/Ctrl/Option), a folder,
-  and a typing speed. Saving collapses the editor back to the card list.
-  Folders are created/renamed/deleted from the sidebar; deleting a folder
-  leaves its snippets unfiled.
+  (click the hotkey field and press a combo — needs Cmd/Ctrl/Option), and a
+  typing speed. Saving collapses the editor back to the card list. Snippets are
+  filed by dragging their cards onto a folder (or onto Unfiled to remove them
+  from one). Folders are created/renamed/deleted from the sidebar; deleting a
+  folder leaves its snippets unfiled.
 - **Direct hotkey**: press a snippet's hotkey while focused in any text field —
   the snippet is typed right where you are. This is the most reliable path.
 - **Quick palette**: press the palette hotkey (default `⌘⇧Space`) to pop a

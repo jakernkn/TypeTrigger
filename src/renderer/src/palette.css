@@ -62,6 +62,18 @@ body {
 
 .palette-folder .palette-name {
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.palette-folder-icon {
+  color: #98989d;
+  flex-shrink: 0;
+}
+
+.palette li.selected .palette-folder-icon {
+  color: #f5f5f7;
 }
 
 .palette ul {

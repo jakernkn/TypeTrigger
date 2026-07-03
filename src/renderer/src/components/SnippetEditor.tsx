@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type {
-  Folder,
   SaveSnippetResult,
   Settings,
   Snippet,
@@ -8,10 +7,10 @@ import type {
   SpeedCurve,
 } from '../../../shared/types';
 import HotkeyField from './HotkeyField';
+import { WarningIcon, XIcon } from './icons';
 
 interface Props {
   snippet: Snippet | null; // null = creating a new snippet
-  folders: Folder[];
   settings: Settings;
   warning?: string;
   onSaved: (result: SaveSnippetResult) => void;
@@ -29,7 +28,6 @@ const CURVES: { value: SpeedCurve; label: string }[] = [
 
 export default function SnippetEditor({
   snippet,
-  folders,
   settings,
   warning,
   onSaved,
@@ -37,9 +35,13 @@ export default function SnippetEditor({
   onClose,
   onDirtyChange,
 }: Props): React.JSX.Element {
-  const [draft, setDraft] = useState<SnippetInput>(
-    snippet ?? { name: 'New snippet', text: '' }
-  );
+  // folderId is deliberately left out of the draft: filing happens by dragging
+  // cards onto folders, and a save here must not undo a move made mid-edit.
+  const [draft, setDraft] = useState<SnippetInput>(() => {
+    if (!snippet) return { name: 'New snippet', text: '' };
+    const { folderId: _folderId, createdAt: _createdAt, ...rest } = snippet;
+    return rest;
+  });
   const [dirty, setDirty] = useState(snippet === null);
   const [saving, setSaving] = useState(false);
 
@@ -79,7 +81,7 @@ export default function SnippetEditor({
       <div className="row editor-header">
         <h2>{snippet ? 'Edit snippet' : 'New snippet'}</h2>
         <button type="button" className="mini" title="Close editor" onClick={onClose}>
-          ✕
+          <XIcon />
         </button>
       </div>
 
@@ -93,29 +95,16 @@ export default function SnippetEditor({
         />
       </label>
 
-      <div className="row">
-        <label className="editor-field">
-          Folder
-          <select
-            value={draft.folderId ?? ''}
-            onChange={(e) => update({ folderId: e.target.value || undefined })}
-          >
-            <option value="">Unfiled</option>
-            {folders.map((f) => (
-              <option key={f.id} value={f.id}>
-                {f.name}
-              </option>
-            ))}
-          </select>
-        </label>
+      <label className="editor-field">
+        Hotkey
+        <HotkeyField value={draft.hotkey} onChange={(hotkey) => update({ hotkey })} />
+      </label>
 
-        <label className="editor-field">
-          Hotkey
-          <HotkeyField value={draft.hotkey} onChange={(hotkey) => update({ hotkey })} />
-        </label>
-      </div>
-
-      {warning && <div className="warning">⚠️ {warning}</div>}
+      {warning && (
+        <div className="warning">
+          <WarningIcon /> {warning}
+        </div>
+      )}
 
       <label className="editor-field editor-text">
         Text

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import type { Folder, PaletteData, Snippet } from '../../shared/types';
+import { FolderIcon } from './components/icons';
 import './palette.css';
 
 type View = 'recent' | 'folders';
@@ -155,7 +156,9 @@ function Palette(): React.JSX.Element {
                     setIndex(0);
                   }}
                 >
-                  <span className="palette-name">📁 {f.name}</span>
+                  <span className="palette-name">
+                    <FolderIcon className="palette-folder-icon" /> {f.name}
+                  </span>
                 </li>
               ))
             : visibleSnippets.map(renderSnippetRow)}

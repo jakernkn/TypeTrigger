@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { FolderIcon, PencilIcon, XIcon } from './icons';
 
 interface Props {
   name: string;
@@ -42,17 +43,17 @@ export default function FolderHeader({
         />
       ) : (
         <span className="folder-name">
-          📁 {name} <span className="folder-count">({count})</span>
+          <FolderIcon /> {name} <span className="folder-count">({count})</span>
         </span>
       )}
       {!editing && onRename && (
         <button type="button" className="mini" title="Rename folder" onClick={() => setEditing(true)}>
-          ✏️
+          <PencilIcon size={12} />
         </button>
       )}
       {onDelete && (
         <button type="button" className="mini" title="Delete folder (snippets become unfiled)" onClick={onDelete}>
-          ✕
+          <XIcon size={12} />
         </button>
       )}
     </div>

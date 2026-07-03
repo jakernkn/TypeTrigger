@@ -5,6 +5,8 @@ import PermissionBanner from './components/PermissionBanner';
 import SettingsPanel from './components/SettingsPanel';
 import SnippetEditor from './components/SnippetEditor';
 import SnippetListItem from './components/SnippetListItem';
+import { WarningIcon } from './components/icons';
+import { SNIPPET_DRAG_TYPE } from './dnd';
 
 export default function App(): React.JSX.Element {
   const [snippets, setSnippets] = useState<Snippet[] | null>(null);
@@ -14,6 +16,7 @@ export default function App(): React.JSX.Element {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [editorDirty, setEditorDirty] = useState(false);
+  const [dragOverKey, setDragOverKey] = useState<string | null>(null);
 
   useEffect(() => {
     window.api.getSnippets().then(setSnippets);
@@ -68,6 +71,38 @@ export default function App(): React.JSX.Element {
     setSnippets(result.snippets);
   }
 
+  async function moveSnippet(snippetId: string, folderId: string | undefined): Promise<void> {
+    const snippet = snippets?.find((s) => s.id === snippetId);
+    if (!snippet || snippet.folderId === folderId) return;
+    const result = await window.api.saveSnippet({ ...snippet, folderId });
+    setSnippets(result.snippets);
+  }
+
+  /** Drag-over highlight + drop handling for a folder group (or Unfiled). */
+  function dropTargetProps(
+    key: string,
+    folderId: string | undefined
+  ): React.HTMLAttributes<HTMLElement> {
+    return {
+      onDragOver: (e) => {
+        if (!e.dataTransfer.types.includes(SNIPPET_DRAG_TYPE)) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        setDragOverKey(key);
+      },
+      onDragLeave: (e) => {
+        if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+        setDragOverKey((k) => (k === key ? null : k));
+      },
+      onDrop: (e) => {
+        e.preventDefault();
+        setDragOverKey(null);
+        const snippetId = e.dataTransfer.getData(SNIPPET_DRAG_TYPE);
+        if (snippetId) moveSnippet(snippetId, folderId);
+      },
+    };
+  }
+
   const selected = snippets.find((s) => s.id === selectedId) ?? null;
   const editorOpen = creating || selected !== null;
 
@@ -92,7 +127,7 @@ export default function App(): React.JSX.Element {
         <PermissionBanner />
         {paletteError && (
           <div className="warning">
-            ⚠️ Palette hotkey “{paletteError.hotkey}”: {paletteError.reason}
+            <WarningIcon /> Palette hotkey “{paletteError.hotkey}”: {paletteError.reason}
           </div>
         )}
 
@@ -118,7 +153,11 @@ export default function App(): React.JSX.Element {
         {folders.map((folder) => {
           const items = snippets.filter((s) => s.folderId === folder.id);
           return (
-            <section key={folder.id} className="folder-group">
+            <section
+              key={folder.id}
+              className={`folder-group${dragOverKey === folder.id ? ' drop-target' : ''}`}
+              {...dropTargetProps(folder.id, folder.id)}
+            >
               <FolderHeader
                 name={folder.name}
                 count={items.length}
@@ -134,14 +173,19 @@ export default function App(): React.JSX.Element {
                   }
                 }}
               />
+              {items.length === 0 && <div className="drop-hint">Drag snippets here</div>}
               {renderItems(items)}
             </section>
           );
         })}
 
         {(unfiled.length > 0 || folders.length > 0) && (
-          <section className="folder-group">
+          <section
+            className={`folder-group${dragOverKey === 'unfiled' ? ' drop-target' : ''}`}
+            {...dropTargetProps('unfiled', undefined)}
+          >
             <FolderHeader name="Unfiled" count={unfiled.length} />
+            {unfiled.length === 0 && <div className="drop-hint">Drag snippets here to unfile</div>}
             {renderItems(unfiled)}
           </section>
         )}
@@ -154,7 +198,6 @@ export default function App(): React.JSX.Element {
           <SnippetEditor
             key={creating ? 'new' : selectedId}
             snippet={selected}
-            folders={folders}
             settings={settings}
             warning={selected ? warningFor(selected.id) : undefined}
             onSaved={(result) => {

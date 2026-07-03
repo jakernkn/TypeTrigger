@@ -72,6 +72,31 @@ h1 {
 
 .folder-header .folder-name {
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.folder-header svg {
+  color: #86868b;
+  flex-shrink: 0;
+}
+
+.folder-group.drop-target {
+  outline: 2px dashed #0071e3;
+  outline-offset: 2px;
+  border-radius: 8px;
+  background: rgba(0, 113, 227, 0.07);
+}
+
+.drop-hint {
+  border: 1px dashed #c0c0c5;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+  color: #86868b;
+  font-size: 12px;
+  text-align: center;
 }
 
 .folder-count {
@@ -99,6 +124,11 @@ h1 {
 
 .snippet-item-top {
   gap: 6px;
+}
+
+.snippet-item-warning {
+  display: flex;
+  color: #b45309;
 }
 
 .snippet-item-name {
@@ -223,10 +253,13 @@ button.danger {
 }
 
 button.mini {
-  padding: 2px 7px;
+  padding: 3px 6px;
   font-size: 12px;
   border: none;
   background: transparent;
+  display: inline-flex;
+  align-items: center;
+  color: #6e6e73;
 }
 
 button.mini:hover {
@@ -301,4 +334,9 @@ button.mini:hover {
   padding: 6px 10px;
   color: #7a5b00;
   margin-bottom: 10px;
+}
+
+.warning svg {
+  vertical-align: -2px;
+  margin-right: 4px;
 }
