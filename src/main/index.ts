@@ -1,8 +1,7 @@
 import { app, BrowserWindow, Menu, Tray, globalShortcut, nativeImage } from 'electron';
 import { join } from 'path';
 import { registerIpcHandlers } from './ipc';
-import { getSettings } from './store';
-import { typeText } from './typing';
+import { registerAllHotkeys } from './hotkeys';
 
 let tray: Tray | null = null;
 let dashboardWindow: BrowserWindow | null = null;
@@ -36,6 +35,17 @@ function showDashboard(): void {
   }
 }
 
+function openPalette(): void {
+  // Phase 5: quick palette window.
+}
+
+function refreshHotkeys(): void {
+  const errors = registerAllHotkeys(openPalette);
+  if (dashboardWindow && !dashboardWindow.isDestroyed()) {
+    dashboardWindow.webContents.send('hotkeys:errors', errors);
+  }
+}
+
 function createTray(): void {
   const iconPath = join(app.getAppPath(), 'resources', 'trayTemplate.png');
   tray = new Tray(nativeImage.createFromPath(iconPath));
@@ -58,15 +68,10 @@ if (!gotLock) {
   app.whenReady().then(() => {
     // Menu-bar app: no Dock icon.
     if (process.platform === 'darwin') app.dock?.hide();
-    registerIpcHandlers({ onHotkeysChanged: () => {} });
+    registerIpcHandlers({ onHotkeysChanged: refreshHotkeys });
     createTray();
     showDashboard();
-
-    // TEMPORARY (phase 3): hardcoded hotkey to prove nut-js + Accessibility
-    // permission end-to-end. Replaced by store-driven hotkeys in phase 4.
-    globalShortcut.register('Command+Alt+T', () => {
-      typeText('Hello from TypeTrigger! The typing engine works.', {}, getSettings());
-    });
+    refreshHotkeys();
   });
 
   app.on('will-quit', () => {

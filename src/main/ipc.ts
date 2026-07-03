@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron';
 import * as store from './store';
+import { getHotkeyErrors } from './hotkeys';
 import {
   hasAccessibilityPermission,
   openAccessibilitySettings,
@@ -34,6 +35,8 @@ export function registerIpcHandlers(hooks: IpcHooks): void {
     hooks.onHotkeysChanged();
     return saved;
   });
+
+  ipcMain.handle('hotkeys:getErrors', () => getHotkeyErrors());
 
   ipcMain.handle('permissions:check', () => hasAccessibilityPermission());
   ipcMain.handle('permissions:request', () => requestAccessibilityPermission());

@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { Settings, Snippet, SnippetInput } from '../shared/types';
+import type { HotkeyError, Settings, Snippet, SnippetInput } from '../shared/types';
 
 const api = {
   getSnippets: (): Promise<Snippet[]> => ipcRenderer.invoke('snippets:get'),
@@ -9,6 +9,12 @@ const api = {
   getSettings: (): Promise<Settings> => ipcRenderer.invoke('settings:get'),
   saveSettings: (settings: Settings): Promise<Settings> =>
     ipcRenderer.invoke('settings:save', settings),
+  getHotkeyErrors: (): Promise<HotkeyError[]> => ipcRenderer.invoke('hotkeys:getErrors'),
+  onHotkeyErrors: (callback: (errors: HotkeyError[]) => void): (() => void) => {
+    const listener = (_event: unknown, errors: HotkeyError[]): void => callback(errors);
+    ipcRenderer.on('hotkeys:errors', listener);
+    return () => ipcRenderer.removeListener('hotkeys:errors', listener);
+  },
   checkAccessibility: (): Promise<boolean> => ipcRenderer.invoke('permissions:check'),
   requestAccessibility: (): Promise<boolean> => ipcRenderer.invoke('permissions:request'),
   openAccessibilitySettings: (): Promise<void> => ipcRenderer.invoke('permissions:openSettings'),

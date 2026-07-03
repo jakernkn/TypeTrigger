@@ -20,6 +20,12 @@ export interface Settings {
   jitterMs: number;
 }
 
+export interface HotkeyError {
+  snippetId: string | null; // null = the palette hotkey
+  hotkey: string;
+  reason: string;
+}
+
 export const DEFAULT_SETTINGS: Settings = {
   paletteHotkey: 'CommandOrControl+Shift+Space',
   defaultTypingSpeedMs: 25,
