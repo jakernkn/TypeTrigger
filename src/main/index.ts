@@ -1,6 +1,8 @@
-import { app, BrowserWindow, Menu, Tray, nativeImage } from 'electron';
+import { app, BrowserWindow, Menu, Tray, globalShortcut, nativeImage } from 'electron';
 import { join } from 'path';
 import { registerIpcHandlers } from './ipc';
+import { getSettings } from './store';
+import { typeText } from './typing';
 
 let tray: Tray | null = null;
 let dashboardWindow: BrowserWindow | null = null;
@@ -59,6 +61,16 @@ if (!gotLock) {
     registerIpcHandlers({ onHotkeysChanged: () => {} });
     createTray();
     showDashboard();
+
+    // TEMPORARY (phase 3): hardcoded hotkey to prove nut-js + Accessibility
+    // permission end-to-end. Replaced by store-driven hotkeys in phase 4.
+    globalShortcut.register('Command+Alt+T', () => {
+      typeText('Hello from TypeTrigger! The typing engine works.', {}, getSettings());
+    });
+  });
+
+  app.on('will-quit', () => {
+    globalShortcut.unregisterAll();
   });
 
   // Keep running in the tray when all windows are closed.

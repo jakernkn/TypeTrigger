@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { Settings, Snippet } from '../../shared/types';
+import PermissionBanner from './components/PermissionBanner';
 import SnippetCard from './components/SnippetCard';
 
 export default function App(): React.JSX.Element {
@@ -20,6 +21,7 @@ export default function App(): React.JSX.Element {
 
   return (
     <div className="app">
+      <PermissionBanner />
       <header className="row header-row">
         <h1>TypeTrigger</h1>
         <button type="button" onClick={addSnippet}>

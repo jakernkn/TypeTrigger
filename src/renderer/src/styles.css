@@ -121,6 +121,18 @@ button.danger {
   justify-content: flex-end;
 }
 
+.permission-banner {
+  background: #fdecea;
+  border: 1px solid #e0a9a2;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 20px;
+}
+
+.permission-banner p {
+  margin: 6px 0 10px;
+}
+
 .warning {
   background: #fff8e1;
   border: 1px solid #f0c36d;

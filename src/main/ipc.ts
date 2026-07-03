@@ -1,5 +1,10 @@
 import { ipcMain } from 'electron';
 import * as store from './store';
+import {
+  hasAccessibilityPermission,
+  openAccessibilitySettings,
+  requestAccessibilityPermission,
+} from './permissions';
 import type { Settings, SnippetInput } from '../shared/types';
 
 interface IpcHooks {
@@ -29,4 +34,8 @@ export function registerIpcHandlers(hooks: IpcHooks): void {
     hooks.onHotkeysChanged();
     return saved;
   });
+
+  ipcMain.handle('permissions:check', () => hasAccessibilityPermission());
+  ipcMain.handle('permissions:request', () => requestAccessibilityPermission());
+  ipcMain.handle('permissions:openSettings', () => openAccessibilitySettings());
 }

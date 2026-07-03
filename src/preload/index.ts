@@ -9,6 +9,9 @@ const api = {
   getSettings: (): Promise<Settings> => ipcRenderer.invoke('settings:get'),
   saveSettings: (settings: Settings): Promise<Settings> =>
     ipcRenderer.invoke('settings:save', settings),
+  checkAccessibility: (): Promise<boolean> => ipcRenderer.invoke('permissions:check'),
+  requestAccessibility: (): Promise<boolean> => ipcRenderer.invoke('permissions:request'),
+  openAccessibilitySettings: (): Promise<void> => ipcRenderer.invoke('permissions:openSettings'),
 };
 
 contextBridge.exposeInMainWorld('api', api);
