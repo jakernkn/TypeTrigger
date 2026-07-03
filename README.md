@@ -41,7 +41,8 @@ types.
   chooser at your cursor. It has two views — **Recent** (newest snippets first)
   and **Folders** — toggled with `Tab`. `↑`/`↓` to navigate, `Enter` to type a
   snippet (or open a folder in the Folders view), `Backspace`/`Esc` to step back
-  out of a folder, `Esc` at the top level to dismiss. The palette is
+  out of a folder, `Esc` at the top level to dismiss. The palette reopens
+  wherever you left it — same view, same folder. The palette is
   content-protected: you see it, but screen recordings (Screen Studio,
   QuickTime) and screenshots don't. The first palette selection may prompt for
   Automation ("System Events") permission — allow it; it's used to hand focus

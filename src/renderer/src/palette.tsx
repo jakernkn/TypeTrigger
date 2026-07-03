@@ -21,12 +21,23 @@ function Palette(): React.JSX.Element {
   const listRef = useRef<HTMLUListElement>(null);
 
   useEffect(() => {
-    // Fresh data arrives every time the palette is shown; reset navigation.
+    // Fresh data arrives every time the palette is shown. Keep the last view
+    // and open folder so the palette reopens where the user left off — but
+    // drop a remembered folder that was deleted (or an Unfiled view that no
+    // longer has snippets), and pick up renames.
     return window.api.onPaletteShow((incoming) => {
       setData(incoming);
-      setView('recent');
-      setOpenFolder(null);
       setIndex(0);
+      setOpenFolder((remembered) => {
+        if (!remembered) return null;
+        if (remembered.id === UNFILED_ID) {
+          const ids = new Set(incoming.folders.map((f) => f.id));
+          const hasUnfiled = incoming.snippets.some((s) => !s.folderId || !ids.has(s.folderId));
+          return hasUnfiled ? remembered : null;
+        }
+        const folder = incoming.folders.find((f) => f.id === remembered.id);
+        return folder ? { id: folder.id, name: folder.name } : null;
+      });
     });
   }, []);
 
