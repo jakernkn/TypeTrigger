@@ -34,7 +34,8 @@ types.
   the snippet is typed right where you are. This is the most reliable path.
 - **Quick palette**: press the palette hotkey (default `⌘⇧Space`) to pop a
   chooser at your cursor. `↑`/`↓` to navigate, `Enter` to type into the app you
-  came from, `Esc` to dismiss. The first palette selection may prompt for
+  came from, `Esc` to dismiss. The palette is content-protected: you see it,
+  but screen recordings (Screen Studio, QuickTime) and screenshots don't. The first palette selection may prompt for
   Automation ("System Events") permission — allow it; it's used to hand focus
   back to the app you were in.
 - **Speed curves**: per snippet, choose Flat / Ease-in / Ease-out / Ease-in-out.

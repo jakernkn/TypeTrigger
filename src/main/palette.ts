@@ -63,6 +63,9 @@ export function createPaletteWindow(): BrowserWindow {
 
   paletteWindow.setAlwaysOnTop(true, 'screen-saver');
   paletteWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+  // Exclude the palette from screen capture (NSWindowSharingNone): it stays
+  // visible to the user but never appears in Screen Studio/QuickTime recordings.
+  paletteWindow.setContentProtection(true);
   paletteWindow.on('blur', hidePalette);
   paletteWindow.on('closed', () => {
     paletteWindow = null;
