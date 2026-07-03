@@ -5,16 +5,24 @@ import HotkeyField from './HotkeyField';
 interface Props {
   settings: Settings;
   onChanged: (settings: Settings) => void;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
-export default function SettingsPanel({ settings, onChanged }: Props): React.JSX.Element {
+export default function SettingsPanel({
+  settings,
+  onChanged,
+  onDirtyChange,
+}: Props): React.JSX.Element {
   const [draft, setDraft] = useState<Settings>(settings);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
 
   function update(patch: Partial<Settings>): void {
     setDraft((d) => ({ ...d, ...patch }));
-    setDirty(true);
+    if (!dirty) {
+      setDirty(true);
+      onDirtyChange?.(true);
+    }
   }
 
   async function save(): Promise<void> {
@@ -22,6 +30,7 @@ export default function SettingsPanel({ settings, onChanged }: Props): React.JSX
     try {
       const saved = await window.api.saveSettings(draft);
       setDirty(false);
+      onDirtyChange?.(false);
       onChanged(saved);
     } finally {
       setSaving(false);
@@ -30,33 +39,38 @@ export default function SettingsPanel({ settings, onChanged }: Props): React.JSX
 
   return (
     <section className="settings-panel">
-      <h2>Settings</h2>
-      <div className="row settings-row">
-        <label>
-          Palette hotkey{' '}
-          <HotkeyField
-            value={draft.paletteHotkey || undefined}
-            onChange={(hotkey) => update({ paletteHotkey: hotkey ?? '' })}
-          />
-        </label>
-        <label>
-          Default speed (ms/char){' '}
-          <input
-            type="number"
-            min={0}
-            value={draft.defaultTypingSpeedMs}
-            onChange={(e) => update({ defaultTypingSpeedMs: Math.max(0, Number(e.target.value)) })}
-          />
-        </label>
-        <label>
-          Jitter (ms){' '}
-          <input
-            type="number"
-            min={0}
-            value={draft.jitterMs}
-            onChange={(e) => update({ jitterMs: Math.max(0, Number(e.target.value)) })}
-          />
-        </label>
+      <label className="editor-field">
+        Palette hotkey
+        <HotkeyField
+          value={draft.paletteHotkey || undefined}
+          onChange={(hotkey) => update({ paletteHotkey: hotkey ?? '' })}
+        />
+        <span className="field-hint">Opens the quick palette at your cursor.</span>
+      </label>
+
+      <label className="editor-field">
+        Default typing speed (ms/char)
+        <input
+          type="number"
+          min={0}
+          value={draft.defaultTypingSpeedMs}
+          onChange={(e) => update({ defaultTypingSpeedMs: Math.max(0, Number(e.target.value)) })}
+        />
+        <span className="field-hint">Used by snippets that don't set their own speed.</span>
+      </label>
+
+      <label className="editor-field">
+        Jitter (ms)
+        <input
+          type="number"
+          min={0}
+          value={draft.jitterMs}
+          onChange={(e) => update({ jitterMs: Math.max(0, Number(e.target.value)) })}
+        />
+        <span className="field-hint">Random extra delay per keystroke, for a human feel.</span>
+      </label>
+
+      <div className="row">
         <button type="button" onClick={save} disabled={!dirty || saving}>
           {saving ? 'Saving…' : dirty ? 'Save' : 'Saved'}
         </button>

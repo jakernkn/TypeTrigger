@@ -5,7 +5,7 @@ import PermissionBanner from './components/PermissionBanner';
 import SettingsPanel from './components/SettingsPanel';
 import SnippetEditor from './components/SnippetEditor';
 import SnippetListItem, { type DropEdge } from './components/SnippetListItem';
-import { WarningIcon } from './components/icons';
+import { ArrowLeftIcon, GearIcon, WarningIcon } from './components/icons';
 import { SNIPPET_DRAG_TYPE } from './dnd';
 
 export default function App(): React.JSX.Element {
@@ -19,6 +19,8 @@ export default function App(): React.JSX.Element {
   const [editorDirty, setEditorDirty] = useState(false);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [sidebarView, setSidebarView] = useState<'snippets' | 'settings'>('snippets');
+  const [settingsDirty, setSettingsDirty] = useState(false);
   const [collapsed, setCollapsed] = useState<Set<string>>(() => {
     try {
       return new Set(JSON.parse(localStorage.getItem('collapsedFolders') ?? '[]'));
@@ -189,6 +191,34 @@ export default function App(): React.JSX.Element {
           </div>
         )}
 
+        {sidebarView === 'settings' ? (
+          <>
+            <header className="row header-row">
+              <div className="row">
+                <button
+                  type="button"
+                  className="mini"
+                  title="Back to snippets"
+                  onClick={() => {
+                    if (!settingsDirty || window.confirm('Discard unsaved settings?')) {
+                      setSettingsDirty(false);
+                      setSidebarView('snippets');
+                    }
+                  }}
+                >
+                  <ArrowLeftIcon size={16} />
+                </button>
+                <h1>Settings</h1>
+              </div>
+            </header>
+            <SettingsPanel
+              settings={settings}
+              onChanged={setSettings}
+              onDirtyChange={setSettingsDirty}
+            />
+          </>
+        ) : (
+          <>
         <header className="row header-row">
           <h1>TypeTrigger</h1>
           <div className="row">
@@ -197,6 +227,14 @@ export default function App(): React.JSX.Element {
             </button>
             <button type="button" onClick={() => openNew()}>
               + Snippet
+            </button>
+            <button
+              type="button"
+              className="mini"
+              title="Settings"
+              onClick={() => setSidebarView('settings')}
+            >
+              <GearIcon size={16} />
             </button>
           </div>
         </header>
@@ -266,8 +304,8 @@ export default function App(): React.JSX.Element {
             </div>
           </section>
         )}
-
-        <SettingsPanel settings={settings} onChanged={setSettings} />
+          </>
+        )}
       </div>
 
       <div className="main-pane">
