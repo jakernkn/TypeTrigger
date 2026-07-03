@@ -121,6 +121,28 @@ button.danger {
   justify-content: flex-end;
 }
 
+.settings-panel {
+  margin-top: 28px;
+  padding-top: 16px;
+  border-top: 1px solid #d2d2d7;
+}
+
+.settings-panel h2 {
+  font-size: 16px;
+  margin: 0 0 12px;
+}
+
+.settings-row {
+  flex-wrap: wrap;
+}
+
+.settings-row label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #6e6e73;
+}
+
 .permission-banner {
   background: #fdecea;
   border: 1px solid #e0a9a2;

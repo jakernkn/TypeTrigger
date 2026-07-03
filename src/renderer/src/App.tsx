@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { HotkeyError, Settings, Snippet } from '../../shared/types';
 import PermissionBanner from './components/PermissionBanner';
+import SettingsPanel from './components/SettingsPanel';
 import SnippetCard from './components/SnippetCard';
 
 export default function App(): React.JSX.Element {
@@ -57,6 +58,8 @@ export default function App(): React.JSX.Element {
           />
         ))
       )}
+
+      <SettingsPanel settings={settings} onChanged={setSettings} />
     </div>
   );
 }
