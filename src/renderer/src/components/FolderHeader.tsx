@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { FolderIcon, PencilIcon, XIcon } from './icons';
+import { ChevronIcon, FolderIcon, PencilIcon, XIcon } from './icons';
 
 interface Props {
   name: string;
   count: number;
+  collapsed: boolean;
+  onToggle: () => void;
   onRename?: (name: string) => void;
   onDelete?: () => void;
 }
@@ -11,6 +13,8 @@ interface Props {
 export default function FolderHeader({
   name,
   count,
+  collapsed,
+  onToggle,
   onRename,
   onDelete,
 }: Props): React.JSX.Element {
@@ -42,7 +46,8 @@ export default function FolderHeader({
           }}
         />
       ) : (
-        <span className="folder-name">
+        <span className="folder-name" onClick={onToggle}>
+          <ChevronIcon size={12} className={`folder-chevron${collapsed ? '' : ' open'}`} />
           <FolderIcon /> {name} <span className="folder-count">({count})</span>
         </span>
       )}

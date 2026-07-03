@@ -17,6 +17,23 @@ export default function App(): React.JSX.Element {
   const [creating, setCreating] = useState(false);
   const [editorDirty, setEditorDirty] = useState(false);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem('collapsedFolders') ?? '[]'));
+    } catch {
+      return new Set();
+    }
+  });
+
+  function toggleCollapsed(key: string): void {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      localStorage.setItem('collapsedFolders', JSON.stringify([...next]));
+      return next;
+    });
+  }
 
   useEffect(() => {
     window.api.getSnippets().then(setSnippets);
@@ -152,6 +169,7 @@ export default function App(): React.JSX.Element {
 
         {folders.map((folder) => {
           const items = snippets.filter((s) => s.folderId === folder.id);
+          const isCollapsed = collapsed.has(folder.id);
           return (
             <section
               key={folder.id}
@@ -161,6 +179,8 @@ export default function App(): React.JSX.Element {
               <FolderHeader
                 name={folder.name}
                 count={items.length}
+                collapsed={isCollapsed}
+                onToggle={() => toggleCollapsed(folder.id)}
                 onRename={(name) => renameFolder(folder.id, name)}
                 onDelete={() => {
                   if (
@@ -173,8 +193,10 @@ export default function App(): React.JSX.Element {
                   }
                 }}
               />
-              {items.length === 0 && <div className="drop-hint">Drag snippets here</div>}
-              {renderItems(items)}
+              {!isCollapsed && items.length === 0 && (
+                <div className="drop-hint">Drag snippets here</div>
+              )}
+              {!isCollapsed && renderItems(items)}
             </section>
           );
         })}
@@ -184,9 +206,16 @@ export default function App(): React.JSX.Element {
             className={`folder-group${dragOverKey === 'unfiled' ? ' drop-target' : ''}`}
             {...dropTargetProps('unfiled', undefined)}
           >
-            <FolderHeader name="Unfiled" count={unfiled.length} />
-            {unfiled.length === 0 && <div className="drop-hint">Drag snippets here to unfile</div>}
-            {renderItems(unfiled)}
+            <FolderHeader
+              name="Unfiled"
+              count={unfiled.length}
+              collapsed={collapsed.has('unfiled')}
+              onToggle={() => toggleCollapsed('unfiled')}
+            />
+            {!collapsed.has('unfiled') && unfiled.length === 0 && (
+              <div className="drop-hint">Drag snippets here to unfile</div>
+            )}
+            {!collapsed.has('unfiled') && renderItems(unfiled)}
           </section>
         )}
 

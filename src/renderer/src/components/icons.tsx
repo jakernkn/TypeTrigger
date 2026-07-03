@@ -61,6 +61,14 @@ export function WarningIcon(props: IconProps): React.JSX.Element {
   );
 }
 
+export function ChevronIcon(props: IconProps): React.JSX.Element {
+  return (
+    <Svg {...props}>
+      <path d="m9 6 6 6-6 6" />
+    </Svg>
+  );
+}
+
 export function PlusIcon(props: IconProps): React.JSX.Element {
   return (
     <Svg {...props}>

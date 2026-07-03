@@ -82,6 +82,19 @@ h1 {
   flex-shrink: 0;
 }
 
+.folder-header .folder-name {
+  cursor: pointer;
+  user-select: none;
+}
+
+.folder-chevron {
+  transition: transform 0.12s ease;
+}
+
+.folder-chevron.open {
+  transform: rotate(90deg);
+}
+
 .folder-group.drop-target {
   outline: 2px dashed #0071e3;
   outline-offset: 2px;
