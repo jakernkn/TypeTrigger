@@ -58,6 +58,23 @@ export function deleteSnippet(id: string): Snippet[] {
   return snippets;
 }
 
+/** Persist a new display order. Ids not present are ignored; stored snippets
+ *  missing from the list keep their relative order at the end. */
+export function reorderSnippets(orderedIds: string[]): Snippet[] {
+  const remaining = new Map(getSnippets().map((s) => [s.id, s]));
+  const next: Snippet[] = [];
+  for (const id of orderedIds) {
+    const snippet = remaining.get(id);
+    if (snippet) {
+      next.push(snippet);
+      remaining.delete(id);
+    }
+  }
+  next.push(...remaining.values());
+  store.set('snippets', next);
+  return next;
+}
+
 export function getFolders(): Folder[] {
   return store.get('folders');
 }

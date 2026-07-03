@@ -4,7 +4,7 @@ import FolderHeader from './components/FolderHeader';
 import PermissionBanner from './components/PermissionBanner';
 import SettingsPanel from './components/SettingsPanel';
 import SnippetEditor from './components/SnippetEditor';
-import SnippetListItem from './components/SnippetListItem';
+import SnippetListItem, { type DropEdge } from './components/SnippetListItem';
 import { WarningIcon } from './components/icons';
 import { SNIPPET_DRAG_TYPE } from './dnd';
 
@@ -18,6 +18,7 @@ export default function App(): React.JSX.Element {
   const [newFolderId, setNewFolderId] = useState<string | undefined>(undefined);
   const [editorDirty, setEditorDirty] = useState(false);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
+  const [draggingId, setDraggingId] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(() => {
     try {
       return new Set(JSON.parse(localStorage.getItem('collapsedFolders') ?? '[]'));
@@ -96,7 +97,36 @@ export default function App(): React.JSX.Element {
     const snippet = snippets?.find((s) => s.id === snippetId);
     if (!snippet || snippet.folderId === folderId) return;
     const result = await window.api.saveSnippet({ ...snippet, folderId });
-    setSnippets(result.snippets);
+    // Send it to the end of the flat list so it lands at the bottom of its
+    // new group rather than at some arbitrary position.
+    const ids = result.snippets.map((s) => s.id).filter((id) => id !== snippetId);
+    ids.push(snippetId);
+    setSnippets(await window.api.reorderSnippets(ids));
+  }
+
+  /** A card was dropped onto another card: put it above/below the target,
+   *  moving it into the target's folder first if they differ. */
+  async function reorderDrop(draggedId: string, targetId: string, edge: DropEdge): Promise<void> {
+    if (!snippets || draggedId === targetId) return;
+    const dragged = snippets.find((s) => s.id === draggedId);
+    const target = snippets.find((s) => s.id === targetId);
+    if (!dragged || !target) return;
+
+    // A dangling folderId (folder deleted) renders in Unfiled; normalize so
+    // the dragged card joins the group the user actually sees.
+    const ids = new Set(folders?.map((f) => f.id));
+    const targetFolderId =
+      target.folderId && ids.has(target.folderId) ? target.folderId : undefined;
+
+    let list = snippets;
+    if (dragged.folderId !== targetFolderId) {
+      list = (await window.api.saveSnippet({ ...dragged, folderId: targetFolderId })).snippets;
+    }
+
+    const order = list.map((s) => s.id).filter((id) => id !== draggedId);
+    const insertAt = order.indexOf(targetId) + (edge === 'bottom' ? 1 : 0);
+    order.splice(insertAt, 0, draggedId);
+    setSnippets(await window.api.reorderSnippets(order));
   }
 
   /** Drag-over highlight + drop handling for a folder group (or Unfiled). */
@@ -137,7 +167,14 @@ export default function App(): React.JSX.Element {
         snippet={s}
         selected={s.id === selectedId && !creating}
         warning={warningFor(s.id)}
+        dragging={draggingId === s.id}
         onClick={() => openSnippet(s.id)}
+        onDragStartSnippet={setDraggingId}
+        onDragEndSnippet={() => {
+          setDraggingId(null);
+          setDragOverKey(null);
+        }}
+        onDropSnippet={(draggedId, edge) => reorderDrop(draggedId, s.id, edge)}
       />
     ));
   }

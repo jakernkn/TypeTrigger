@@ -29,6 +29,11 @@ export function registerIpcHandlers(hooks: IpcHooks): void {
     return snippets;
   });
 
+  // Pure display-order change: hotkeys are unaffected, no re-registration.
+  ipcMain.handle('snippets:reorder', (_event, orderedIds: string[]) =>
+    store.reorderSnippets(orderedIds)
+  );
+
   ipcMain.handle('folders:get', () => store.getFolders());
   ipcMain.handle('folders:save', (_event, input: FolderInput) => store.saveFolder(input));
   ipcMain.handle('folders:delete', (_event, id: string) => store.deleteFolder(id));

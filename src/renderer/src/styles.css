@@ -158,6 +158,27 @@ h1 {
   box-shadow: 0 0 0 1px #0071e3;
 }
 
+.snippet-item.dragging {
+  opacity: 0.45;
+}
+
+/* Insertion line rendered in the 6px gap between cards. */
+.snippet-item.drop-above {
+  box-shadow: 0 -5px 0 -3px #0071e3;
+}
+
+.snippet-item.drop-below {
+  box-shadow: 0 5px 0 -3px #0071e3;
+}
+
+.snippet-item.selected.drop-above {
+  box-shadow: 0 0 0 1px #0071e3, 0 -5px 0 -3px #0071e3;
+}
+
+.snippet-item.selected.drop-below {
+  box-shadow: 0 0 0 1px #0071e3, 0 5px 0 -3px #0071e3;
+}
+
 .snippet-item-top {
   gap: 6px;
 }

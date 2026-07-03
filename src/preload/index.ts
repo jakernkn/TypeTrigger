@@ -16,6 +16,8 @@ const api = {
   saveSnippet: (snippet: SnippetInput): Promise<SaveSnippetResult> =>
     ipcRenderer.invoke('snippets:save', snippet),
   deleteSnippet: (id: string): Promise<Snippet[]> => ipcRenderer.invoke('snippets:delete', id),
+  reorderSnippets: (orderedIds: string[]): Promise<Snippet[]> =>
+    ipcRenderer.invoke('snippets:reorder', orderedIds),
   getFolders: (): Promise<Folder[]> => ipcRenderer.invoke('folders:get'),
   saveFolder: (folder: FolderInput): Promise<Folder[]> =>
     ipcRenderer.invoke('folders:save', folder),
