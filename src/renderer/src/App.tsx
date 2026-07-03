@@ -198,10 +198,12 @@ export default function App(): React.JSX.Element {
                   }
                 }}
               />
-              {!isCollapsed && items.length === 0 && (
-                <div className="drop-hint">Drag snippets here</div>
-              )}
-              {!isCollapsed && renderItems(items)}
+              <div className={`folder-body${isCollapsed ? ' collapsed' : ''}`}>
+                <div className="folder-body-inner">
+                  {items.length === 0 && <div className="drop-hint">Drag snippets here</div>}
+                  {renderItems(items)}
+                </div>
+              </div>
             </section>
           );
         })}
@@ -217,10 +219,14 @@ export default function App(): React.JSX.Element {
               collapsed={collapsed.has('unfiled')}
               onToggle={() => toggleCollapsed('unfiled')}
             />
-            {!collapsed.has('unfiled') && unfiled.length === 0 && (
-              <div className="drop-hint">Drag snippets here to unfile</div>
-            )}
-            {!collapsed.has('unfiled') && renderItems(unfiled)}
+            <div className={`folder-body${collapsed.has('unfiled') ? ' collapsed' : ''}`}>
+              <div className="folder-body-inner">
+                {unfiled.length === 0 && (
+                  <div className="drop-hint">Drag snippets here to unfile</div>
+                )}
+                {renderItems(unfiled)}
+              </div>
+            </div>
           </section>
         )}
 

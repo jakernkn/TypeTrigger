@@ -88,11 +88,34 @@ h1 {
 }
 
 .folder-chevron {
-  transition: transform 0.12s ease;
+  transition: transform 0.18s ease;
 }
 
 .folder-chevron.open {
   transform: rotate(90deg);
+}
+
+/* Animated collapse: grid rows can transition between 0fr and 1fr, which
+   height:auto cannot. The inner wrapper needs min-height:0 to shrink. */
+.folder-body {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows 0.18s ease;
+}
+
+.folder-body.collapsed {
+  grid-template-rows: 0fr;
+}
+
+.folder-body-inner {
+  min-height: 0;
+  overflow: hidden;
+  opacity: 1;
+  transition: opacity 0.18s ease;
+}
+
+.folder-body.collapsed .folder-body-inner {
+  opacity: 0;
 }
 
 .folder-group.drop-target {
