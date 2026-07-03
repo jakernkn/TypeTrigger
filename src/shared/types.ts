@@ -4,6 +4,7 @@ export interface Snippet {
   id: string;
   name: string;
   text: string;
+  folderId?: string; // undefined = unfiled
   hotkey?: string; // Electron accelerator string, e.g. "Command+Alt+1"
   typingSpeedMs?: number; // per-char delay, used when speedCurve is 'flat'
   speedCurve?: SpeedCurve; // default 'flat'
@@ -13,6 +14,29 @@ export interface Snippet {
 }
 
 export type SnippetInput = Omit<Snippet, 'id' | 'createdAt'> & { id?: string };
+
+export interface SaveSnippetResult {
+  snippets: Snippet[];
+  saved: Snippet;
+}
+
+export interface Folder {
+  id: string;
+  name: string;
+  createdAt: number;
+}
+
+export type FolderInput = Omit<Folder, 'id' | 'createdAt'> & { id?: string };
+
+export interface DeleteFolderResult {
+  folders: Folder[];
+  snippets: Snippet[]; // snippets from the deleted folder become unfiled
+}
+
+export interface PaletteData {
+  snippets: Snippet[];
+  folders: Folder[];
+}
 
 export interface Settings {
   paletteHotkey: string;

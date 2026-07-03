@@ -1,12 +1,23 @@
 import { useState } from 'react';
-import type { Settings, Snippet, SpeedCurve } from '../../../shared/types';
+import type {
+  Folder,
+  SaveSnippetResult,
+  Settings,
+  Snippet,
+  SnippetInput,
+  SpeedCurve,
+} from '../../../shared/types';
 import HotkeyField from './HotkeyField';
 
 interface Props {
-  snippet: Snippet;
+  snippet: Snippet | null; // null = creating a new snippet
+  folders: Folder[];
   settings: Settings;
   warning?: string;
-  onChanged: (snippets: Snippet[]) => void;
+  onSaved: (result: SaveSnippetResult) => void;
+  onDeleted: (snippets: Snippet[]) => void;
+  onClose: () => void;
+  onDirtyChange: (dirty: boolean) => void;
 }
 
 const CURVES: { value: SpeedCurve; label: string }[] = [
@@ -16,60 +27,105 @@ const CURVES: { value: SpeedCurve; label: string }[] = [
   { value: 'ease-in-out', label: 'Ease-in-out (slow start & finish)' },
 ];
 
-export default function SnippetCard({
+export default function SnippetEditor({
   snippet,
+  folders,
   settings,
   warning,
-  onChanged,
+  onSaved,
+  onDeleted,
+  onClose,
+  onDirtyChange,
 }: Props): React.JSX.Element {
-  const [draft, setDraft] = useState<Snippet>(snippet);
-  const [dirty, setDirty] = useState(false);
+  const [draft, setDraft] = useState<SnippetInput>(
+    snippet ?? { name: 'New snippet', text: '' }
+  );
+  const [dirty, setDirty] = useState(snippet === null);
   const [saving, setSaving] = useState(false);
 
-  function update(patch: Partial<Snippet>): void {
+  function update(patch: Partial<SnippetInput>): void {
     setDraft((d) => ({ ...d, ...patch }));
-    setDirty(true);
+    if (!dirty) {
+      setDirty(true);
+      onDirtyChange(true);
+    }
   }
 
   async function save(): Promise<void> {
     setSaving(true);
     try {
-      const snippets = await window.api.saveSnippet(draft);
+      const result = await window.api.saveSnippet({ ...draft, id: snippet?.id });
       setDirty(false);
-      onChanged(snippets);
+      onDirtyChange(false);
+      onSaved(result);
     } finally {
       setSaving(false);
     }
   }
 
   async function remove(): Promise<void> {
-    onChanged(await window.api.deleteSnippet(snippet.id));
+    if (!snippet) {
+      onClose();
+      return;
+    }
+    onDeleted(await window.api.deleteSnippet(snippet.id));
   }
 
   const curve = draft.speedCurve ?? 'flat';
   const base = draft.typingSpeedMs ?? settings.defaultTypingSpeedMs;
 
   return (
-    <div className="snippet-card">
-      <div className="row">
+    <div className="editor">
+      <div className="row editor-header">
+        <h2>{snippet ? 'Edit snippet' : 'New snippet'}</h2>
+        <button type="button" className="mini" title="Close editor" onClick={onClose}>
+          ✕
+        </button>
+      </div>
+
+      <label className="editor-field">
+        Name
         <input
-          className="snippet-name"
           type="text"
           value={draft.name}
           placeholder="Snippet name"
           onChange={(e) => update({ name: e.target.value })}
         />
-        <HotkeyField value={draft.hotkey} onChange={(hotkey) => update({ hotkey })} />
+      </label>
+
+      <div className="row">
+        <label className="editor-field">
+          Folder
+          <select
+            value={draft.folderId ?? ''}
+            onChange={(e) => update({ folderId: e.target.value || undefined })}
+          >
+            <option value="">Unfiled</option>
+            {folders.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="editor-field">
+          Hotkey
+          <HotkeyField value={draft.hotkey} onChange={(hotkey) => update({ hotkey })} />
+        </label>
       </div>
 
       {warning && <div className="warning">⚠️ {warning}</div>}
 
-      <textarea
-        rows={5}
-        value={draft.text}
-        placeholder="Text to type…"
-        onChange={(e) => update({ text: e.target.value })}
-      />
+      <label className="editor-field editor-text">
+        Text
+        <textarea
+          rows={12}
+          value={draft.text}
+          placeholder="Text to type…"
+          onChange={(e) => update({ text: e.target.value })}
+        />
+      </label>
 
       <div className="row speed-row">
         <label>
@@ -140,7 +196,7 @@ export default function SnippetCard({
           {saving ? 'Saving…' : dirty ? 'Save' : 'Saved'}
         </button>
         <button type="button" className="danger" onClick={remove}>
-          Delete
+          {snippet ? 'Delete' : 'Discard'}
         </button>
       </div>
     </div>

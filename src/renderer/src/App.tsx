@@ -1,65 +1,183 @@
 import { useEffect, useState } from 'react';
-import type { HotkeyError, Settings, Snippet } from '../../shared/types';
+import type { Folder, HotkeyError, Settings, Snippet } from '../../shared/types';
+import FolderHeader from './components/FolderHeader';
 import PermissionBanner from './components/PermissionBanner';
 import SettingsPanel from './components/SettingsPanel';
-import SnippetCard from './components/SnippetCard';
+import SnippetEditor from './components/SnippetEditor';
+import SnippetListItem from './components/SnippetListItem';
 
 export default function App(): React.JSX.Element {
   const [snippets, setSnippets] = useState<Snippet[] | null>(null);
+  const [folders, setFolders] = useState<Folder[] | null>(null);
   const [settings, setSettings] = useState<Settings | null>(null);
   const [hotkeyErrors, setHotkeyErrors] = useState<HotkeyError[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [editorDirty, setEditorDirty] = useState(false);
 
   useEffect(() => {
     window.api.getSnippets().then(setSnippets);
+    window.api.getFolders().then(setFolders);
     window.api.getSettings().then(setSettings);
     window.api.getHotkeyErrors().then(setHotkeyErrors);
     return window.api.onHotkeyErrors(setHotkeyErrors);
   }, []);
 
-  async function addSnippet(): Promise<void> {
-    const updated = await window.api.saveSnippet({ name: 'New snippet', text: '' });
-    setSnippets(updated);
-  }
-
-  if (!snippets || !settings) return <div className="app">Loading…</div>;
+  if (!snippets || !folders || !settings) return <div className="app">Loading…</div>;
 
   const paletteError = hotkeyErrors.find((e) => e.snippetId === null);
   const warningFor = (id: string): string | undefined =>
     hotkeyErrors.find((e) => e.snippetId === id)?.reason;
 
+  function confirmDiscard(): boolean {
+    return !editorDirty || window.confirm('Discard unsaved changes?');
+  }
+
+  function openSnippet(id: string): void {
+    if (id === selectedId && !creating) return;
+    if (!confirmDiscard()) return;
+    setCreating(false);
+    setSelectedId(id);
+    setEditorDirty(false);
+  }
+
+  function openNew(): void {
+    if (!confirmDiscard()) return;
+    setSelectedId(null);
+    setCreating(true);
+    setEditorDirty(false);
+  }
+
+  function closeEditor(): void {
+    setSelectedId(null);
+    setCreating(false);
+    setEditorDirty(false);
+  }
+
+  async function addFolder(): Promise<void> {
+    setFolders(await window.api.saveFolder({ name: 'New folder' }));
+  }
+
+  async function renameFolder(id: string, name: string): Promise<void> {
+    setFolders(await window.api.saveFolder({ id, name }));
+  }
+
+  async function removeFolder(id: string): Promise<void> {
+    const result = await window.api.deleteFolder(id);
+    setFolders(result.folders);
+    setSnippets(result.snippets);
+  }
+
+  const selected = snippets.find((s) => s.id === selectedId) ?? null;
+  const editorOpen = creating || selected !== null;
+
+  const folderIds = new Set(folders.map((f) => f.id));
+  const unfiled = snippets.filter((s) => !s.folderId || !folderIds.has(s.folderId));
+
+  function renderItems(items: Snippet[]): React.JSX.Element[] {
+    return items.map((s) => (
+      <SnippetListItem
+        key={s.id}
+        snippet={s}
+        selected={s.id === selectedId && !creating}
+        warning={warningFor(s.id)}
+        onClick={() => openSnippet(s.id)}
+      />
+    ));
+  }
+
   return (
-    <div className="app">
-      <PermissionBanner />
-      {paletteError && (
-        <div className="warning">
-          ⚠️ Palette hotkey “{paletteError.hotkey}”: {paletteError.reason}
-        </div>
-      )}
-      <header className="row header-row">
-        <h1>TypeTrigger</h1>
-        <button type="button" onClick={addSnippet}>
-          + Add snippet
-        </button>
-      </header>
+    <div className="layout">
+      <div className="sidebar">
+        <PermissionBanner />
+        {paletteError && (
+          <div className="warning">
+            ⚠️ Palette hotkey “{paletteError.hotkey}”: {paletteError.reason}
+          </div>
+        )}
 
-      {snippets.length === 0 ? (
-        <p className="empty">
-          No snippets yet. Add one, give it a hotkey, and TypeTrigger will type it into
-          whatever text field is focused.
-        </p>
-      ) : (
-        snippets.map((s) => (
-          <SnippetCard
-            key={s.id}
-            snippet={s}
+        <header className="row header-row">
+          <h1>TypeTrigger</h1>
+          <div className="row">
+            <button type="button" onClick={addFolder}>
+              + Folder
+            </button>
+            <button type="button" onClick={openNew}>
+              + Snippet
+            </button>
+          </div>
+        </header>
+
+        {snippets.length === 0 && folders.length === 0 && (
+          <p className="empty">
+            No snippets yet. Add one, give it a hotkey, and TypeTrigger will type it into
+            whatever text field is focused.
+          </p>
+        )}
+
+        {folders.map((folder) => {
+          const items = snippets.filter((s) => s.folderId === folder.id);
+          return (
+            <section key={folder.id} className="folder-group">
+              <FolderHeader
+                name={folder.name}
+                count={items.length}
+                onRename={(name) => renameFolder(folder.id, name)}
+                onDelete={() => {
+                  if (
+                    items.length === 0 ||
+                    window.confirm(
+                      `Delete folder “${folder.name}”? Its ${items.length} snippet(s) become unfiled.`
+                    )
+                  ) {
+                    removeFolder(folder.id);
+                  }
+                }}
+              />
+              {renderItems(items)}
+            </section>
+          );
+        })}
+
+        {(unfiled.length > 0 || folders.length > 0) && (
+          <section className="folder-group">
+            <FolderHeader name="Unfiled" count={unfiled.length} />
+            {renderItems(unfiled)}
+          </section>
+        )}
+
+        <SettingsPanel settings={settings} onChanged={setSettings} />
+      </div>
+
+      <div className="main-pane">
+        {editorOpen ? (
+          <SnippetEditor
+            key={creating ? 'new' : selectedId}
+            snippet={selected}
+            folders={folders}
             settings={settings}
-            warning={warningFor(s.id)}
-            onChanged={setSnippets}
+            warning={selected ? warningFor(selected.id) : undefined}
+            onSaved={(result) => {
+              setSnippets(result.snippets);
+              closeEditor();
+            }}
+            onDeleted={(updated) => {
+              setSnippets(updated);
+              closeEditor();
+            }}
+            onClose={() => {
+              if (confirmDiscard()) closeEditor();
+            }}
+            onDirtyChange={setEditorDirty}
           />
-        ))
-      )}
-
-      <SettingsPanel settings={settings} onChanged={setSettings} />
+        ) : (
+          <div className="editor-empty">
+            Select a snippet to edit it,
+            <br />
+            or hit “+ Snippet” to create one.
+          </div>
+        )}
+      </div>
     </div>
   );
 }

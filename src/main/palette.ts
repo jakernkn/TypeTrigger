@@ -1,8 +1,9 @@
 import { BrowserWindow, screen } from 'electron';
 import { execFile } from 'child_process';
 import { join } from 'path';
-import { getSettings, getSnippets } from './store';
+import { getFolders, getSettings, getSnippets } from './store';
 import { isTyping, typeText } from './typing';
+import type { PaletteData } from '../shared/types';
 
 const PALETTE_WIDTH = 320;
 const PALETTE_HEIGHT = 360;
@@ -108,7 +109,8 @@ export async function openPalette(): Promise<void> {
   );
   win.setPosition(Math.round(x), Math.round(y));
 
-  win.webContents.send('palette:show', getSnippets());
+  const data: PaletteData = { snippets: getSnippets(), folders: getFolders() };
+  win.webContents.send('palette:show', data);
   win.show();
   win.focus();
 }

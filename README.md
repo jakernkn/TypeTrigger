@@ -27,15 +27,22 @@ types.
 
 ## Usage
 
-- **Dashboard**: add snippets, give each a name, text, an optional global
-  hotkey (click the hotkey field and press a combo — needs Cmd/Ctrl/Option),
-  and a typing speed.
+- **Dashboard**: snippets appear as compact preview cards in the left sidebar,
+  grouped by folder; clicking one (or hitting “+ Snippet”) opens the editor in
+  the right pane. Each snippet has a name, text, an optional global hotkey
+  (click the hotkey field and press a combo — needs Cmd/Ctrl/Option), a folder,
+  and a typing speed. Saving collapses the editor back to the card list.
+  Folders are created/renamed/deleted from the sidebar; deleting a folder
+  leaves its snippets unfiled.
 - **Direct hotkey**: press a snippet's hotkey while focused in any text field —
   the snippet is typed right where you are. This is the most reliable path.
 - **Quick palette**: press the palette hotkey (default `⌘⇧Space`) to pop a
-  chooser at your cursor. `↑`/`↓` to navigate, `Enter` to type into the app you
-  came from, `Esc` to dismiss. The palette is content-protected: you see it,
-  but screen recordings (Screen Studio, QuickTime) and screenshots don't. The first palette selection may prompt for
+  chooser at your cursor. It has two views — **Recent** (newest snippets first)
+  and **Folders** — toggled with `Tab`. `↑`/`↓` to navigate, `Enter` to type a
+  snippet (or open a folder in the Folders view), `Backspace`/`Esc` to step back
+  out of a folder, `Esc` at the top level to dismiss. The palette is
+  content-protected: you see it, but screen recordings (Screen Studio,
+  QuickTime) and screenshots don't. The first palette selection may prompt for
   Automation ("System Events") permission — allow it; it's used to hand focus
   back to the app you were in.
 - **Speed curves**: per snippet, choose Flat / Ease-in / Ease-out / Ease-in-out.

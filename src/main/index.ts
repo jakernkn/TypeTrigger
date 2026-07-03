@@ -17,8 +17,8 @@ function showDashboard(): void {
   }
 
   dashboardWindow = new BrowserWindow({
-    width: 920,
-    height: 680,
+    width: 1080,
+    height: 700,
     title: 'TypeTrigger',
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),

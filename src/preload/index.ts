@@ -1,17 +1,32 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { HotkeyError, Settings, Snippet, SnippetInput } from '../shared/types';
+import type {
+  DeleteFolderResult,
+  Folder,
+  FolderInput,
+  HotkeyError,
+  PaletteData,
+  SaveSnippetResult,
+  Settings,
+  Snippet,
+  SnippetInput,
+} from '../shared/types';
 
 const api = {
   getSnippets: (): Promise<Snippet[]> => ipcRenderer.invoke('snippets:get'),
-  saveSnippet: (snippet: SnippetInput): Promise<Snippet[]> =>
+  saveSnippet: (snippet: SnippetInput): Promise<SaveSnippetResult> =>
     ipcRenderer.invoke('snippets:save', snippet),
   deleteSnippet: (id: string): Promise<Snippet[]> => ipcRenderer.invoke('snippets:delete', id),
+  getFolders: (): Promise<Folder[]> => ipcRenderer.invoke('folders:get'),
+  saveFolder: (folder: FolderInput): Promise<Folder[]> =>
+    ipcRenderer.invoke('folders:save', folder),
+  deleteFolder: (id: string): Promise<DeleteFolderResult> =>
+    ipcRenderer.invoke('folders:delete', id),
   getSettings: (): Promise<Settings> => ipcRenderer.invoke('settings:get'),
   saveSettings: (settings: Settings): Promise<Settings> =>
     ipcRenderer.invoke('settings:save', settings),
   getHotkeyErrors: (): Promise<HotkeyError[]> => ipcRenderer.invoke('hotkeys:getErrors'),
-  onPaletteShow: (callback: (snippets: Snippet[]) => void): (() => void) => {
-    const listener = (_event: unknown, snippets: Snippet[]): void => callback(snippets);
+  onPaletteShow: (callback: (data: PaletteData) => void): (() => void) => {
+    const listener = (_event: unknown, data: PaletteData): void => callback(data);
     ipcRenderer.on('palette:show', listener);
     return () => ipcRenderer.removeListener('palette:show', listener);
   },

@@ -26,12 +26,42 @@ body {
   border-radius: 8px;
 }
 
-.palette-title {
-  padding: 8px 12px;
-  font-weight: 600;
+.palette-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px;
+  border-bottom: 1px solid #3a3a3c;
+}
+
+.palette-tabs span {
+  padding: 3px 10px;
+  border-radius: 5px;
   font-size: 12px;
+  font-weight: 600;
+  color: #98989d;
+  cursor: pointer;
+}
+
+.palette-tabs span.active {
+  background: #3a3a3c;
+  color: #f5f5f7;
+}
+
+.palette-breadcrumb {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
   color: #98989d;
   border-bottom: 1px solid #3a3a3c;
+  cursor: pointer;
+}
+
+.palette-breadcrumb:hover {
+  color: #f5f5f7;
+}
+
+.palette-folder .palette-name {
+  font-weight: 500;
 }
 
 .palette ul {

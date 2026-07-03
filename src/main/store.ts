@@ -1,16 +1,26 @@
 import Store from 'electron-store';
 import { randomUUID } from 'crypto';
 import { DEFAULT_SETTINGS } from '../shared/types';
-import type { Settings, Snippet, SnippetInput } from '../shared/types';
+import type {
+  DeleteFolderResult,
+  Folder,
+  FolderInput,
+  SaveSnippetResult,
+  Settings,
+  Snippet,
+  SnippetInput,
+} from '../shared/types';
 
 interface StoreSchema {
   snippets: Snippet[];
+  folders: Folder[];
   settings: Settings;
 }
 
 const store = new Store<StoreSchema>({
   defaults: {
     snippets: [],
+    folders: [],
     settings: DEFAULT_SETTINGS,
   },
 });
@@ -27,22 +37,55 @@ export function getSnippets(): Snippet[] {
   return store.get('snippets');
 }
 
-export function saveSnippet(input: SnippetInput): Snippet[] {
+export function saveSnippet(input: SnippetInput): SaveSnippetResult {
   const snippets = getSnippets();
   const index = input.id ? snippets.findIndex((s) => s.id === input.id) : -1;
+  let saved: Snippet;
   if (index >= 0) {
-    snippets[index] = compact({ ...snippets[index], ...input, id: snippets[index].id });
+    saved = compact({ ...snippets[index], ...input, id: snippets[index].id });
+    snippets[index] = saved;
   } else {
-    snippets.push(compact({ ...input, id: randomUUID(), createdAt: Date.now() }));
+    saved = compact({ ...input, id: randomUUID(), createdAt: Date.now() });
+    snippets.push(saved);
   }
   store.set('snippets', snippets);
-  return snippets;
+  return { snippets, saved };
 }
 
 export function deleteSnippet(id: string): Snippet[] {
   const snippets = getSnippets().filter((s) => s.id !== id);
   store.set('snippets', snippets);
   return snippets;
+}
+
+export function getFolders(): Folder[] {
+  return store.get('folders');
+}
+
+export function saveFolder(input: FolderInput): Folder[] {
+  const folders = getFolders();
+  const index = input.id ? folders.findIndex((f) => f.id === input.id) : -1;
+  if (index >= 0) {
+    folders[index] = { ...folders[index], ...compact(input), id: folders[index].id };
+  } else {
+    folders.push({ ...input, id: randomUUID(), createdAt: Date.now() });
+  }
+  store.set('folders', folders);
+  return folders;
+}
+
+export function deleteFolder(id: string): DeleteFolderResult {
+  const folders = getFolders().filter((f) => f.id !== id);
+  store.set('folders', folders);
+
+  const snippets = getSnippets().map((s) => {
+    if (s.folderId !== id) return s;
+    const { folderId: _dropped, ...rest } = s;
+    return rest;
+  });
+  store.set('snippets', snippets);
+
+  return { folders, snippets };
 }
 
 export function getSettings(): Settings {

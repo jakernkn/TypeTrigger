@@ -7,7 +7,7 @@ import {
   openAccessibilitySettings,
   requestAccessibilityPermission,
 } from './permissions';
-import type { Settings, SnippetInput } from '../shared/types';
+import type { FolderInput, Settings, SnippetInput } from '../shared/types';
 
 interface IpcHooks {
   /** Called after any change that can affect hotkey registration. */
@@ -18,9 +18,9 @@ export function registerIpcHandlers(hooks: IpcHooks): void {
   ipcMain.handle('snippets:get', () => store.getSnippets());
 
   ipcMain.handle('snippets:save', (_event, input: SnippetInput) => {
-    const snippets = store.saveSnippet(input);
+    const result = store.saveSnippet(input);
     hooks.onHotkeysChanged();
-    return snippets;
+    return result;
   });
 
   ipcMain.handle('snippets:delete', (_event, id: string) => {
@@ -28,6 +28,10 @@ export function registerIpcHandlers(hooks: IpcHooks): void {
     hooks.onHotkeysChanged();
     return snippets;
   });
+
+  ipcMain.handle('folders:get', () => store.getFolders());
+  ipcMain.handle('folders:save', (_event, input: FolderInput) => store.saveFolder(input));
+  ipcMain.handle('folders:delete', (_event, id: string) => store.deleteFolder(id));
 
   ipcMain.handle('settings:get', () => store.getSettings());
 
