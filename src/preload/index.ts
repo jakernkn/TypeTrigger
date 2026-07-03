@@ -10,6 +10,13 @@ const api = {
   saveSettings: (settings: Settings): Promise<Settings> =>
     ipcRenderer.invoke('settings:save', settings),
   getHotkeyErrors: (): Promise<HotkeyError[]> => ipcRenderer.invoke('hotkeys:getErrors'),
+  onPaletteShow: (callback: (snippets: Snippet[]) => void): (() => void) => {
+    const listener = (_event: unknown, snippets: Snippet[]): void => callback(snippets);
+    ipcRenderer.on('palette:show', listener);
+    return () => ipcRenderer.removeListener('palette:show', listener);
+  },
+  paletteSelect: (id: string): Promise<void> => ipcRenderer.invoke('palette:select', id),
+  paletteHide: (): Promise<void> => ipcRenderer.invoke('palette:hide'),
   onHotkeyErrors: (callback: (errors: HotkeyError[]) => void): (() => void) => {
     const listener = (_event: unknown, errors: HotkeyError[]): void => callback(errors);
     ipcRenderer.on('hotkeys:errors', listener);

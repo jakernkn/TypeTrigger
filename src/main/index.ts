@@ -2,6 +2,7 @@ import { app, BrowserWindow, Menu, Tray, globalShortcut, nativeImage } from 'ele
 import { join } from 'path';
 import { registerIpcHandlers } from './ipc';
 import { registerAllHotkeys } from './hotkeys';
+import { createPaletteWindow, openPalette } from './palette';
 
 let tray: Tray | null = null;
 let dashboardWindow: BrowserWindow | null = null;
@@ -33,10 +34,6 @@ function showDashboard(): void {
   } else {
     dashboardWindow.loadFile(join(__dirname, '../renderer/index.html'));
   }
-}
-
-function openPalette(): void {
-  // Phase 5: quick palette window.
 }
 
 function refreshHotkeys(): void {
@@ -71,6 +68,8 @@ if (!gotLock) {
     registerIpcHandlers({ onHotkeysChanged: refreshHotkeys });
     createTray();
     showDashboard();
+    // Create the palette hidden now so it's already loaded on first hotkey press.
+    createPaletteWindow();
     refreshHotkeys();
   });
 

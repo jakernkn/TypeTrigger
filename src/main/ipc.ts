@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron';
 import * as store from './store';
 import { getHotkeyErrors } from './hotkeys';
+import { hidePalette, selectSnippet } from './palette';
 import {
   hasAccessibilityPermission,
   openAccessibilitySettings,
@@ -37,6 +38,9 @@ export function registerIpcHandlers(hooks: IpcHooks): void {
   });
 
   ipcMain.handle('hotkeys:getErrors', () => getHotkeyErrors());
+
+  ipcMain.handle('palette:select', (_event, id: string) => selectSnippet(id));
+  ipcMain.handle('palette:hide', () => hidePalette());
 
   ipcMain.handle('permissions:check', () => hasAccessibilityPermission());
   ipcMain.handle('permissions:request', () => requestAccessibilityPermission());
