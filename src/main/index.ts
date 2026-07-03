@@ -1,5 +1,6 @@
 import { app, BrowserWindow, Menu, Tray, nativeImage } from 'electron';
 import { join } from 'path';
+import { registerIpcHandlers } from './ipc';
 
 let tray: Tray | null = null;
 let dashboardWindow: BrowserWindow | null = null;
@@ -55,6 +56,7 @@ if (!gotLock) {
   app.whenReady().then(() => {
     // Menu-bar app: no Dock icon.
     if (process.platform === 'darwin') app.dock?.hide();
+    registerIpcHandlers({ onHotkeysChanged: () => {} });
     createTray();
     showDashboard();
   });
