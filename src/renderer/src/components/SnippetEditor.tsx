@@ -11,6 +11,8 @@ import { WarningIcon, XIcon } from './icons';
 
 interface Props {
   snippet: Snippet | null; // null = creating a new snippet
+  newFolderId?: string; // when creating: file the new snippet here
+  newFolderName?: string; // display only
   settings: Settings;
   warning?: string;
   onSaved: (result: SaveSnippetResult) => void;
@@ -28,6 +30,8 @@ const CURVES: { value: SpeedCurve; label: string }[] = [
 
 export default function SnippetEditor({
   snippet,
+  newFolderId,
+  newFolderName,
   settings,
   warning,
   onSaved,
@@ -35,10 +39,11 @@ export default function SnippetEditor({
   onClose,
   onDirtyChange,
 }: Props): React.JSX.Element {
-  // folderId is deliberately left out of the draft: filing happens by dragging
-  // cards onto folders, and a save here must not undo a move made mid-edit.
+  // For existing snippets, folderId is deliberately left out of the draft:
+  // filing happens by dragging cards onto folders, and a save here must not
+  // undo a move made mid-edit. New snippets carry the target folder through.
   const [draft, setDraft] = useState<SnippetInput>(() => {
-    if (!snippet) return { name: 'New snippet', text: '' };
+    if (!snippet) return { name: 'New snippet', text: '', folderId: newFolderId };
     const { folderId: _folderId, createdAt: _createdAt, ...rest } = snippet;
     return rest;
   });
@@ -79,7 +84,13 @@ export default function SnippetEditor({
   return (
     <div className="editor">
       <div className="row editor-header">
-        <h2>{snippet ? 'Edit snippet' : 'New snippet'}</h2>
+        <h2>
+          {snippet
+            ? 'Edit snippet'
+            : newFolderName
+              ? `New snippet in “${newFolderName}”`
+              : 'New snippet'}
+        </h2>
         <button type="button" className="mini" title="Close editor" onClick={onClose}>
           <XIcon />
         </button>

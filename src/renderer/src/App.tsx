@@ -15,6 +15,7 @@ export default function App(): React.JSX.Element {
   const [hotkeyErrors, setHotkeyErrors] = useState<HotkeyError[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
+  const [newFolderId, setNewFolderId] = useState<string | undefined>(undefined);
   const [editorDirty, setEditorDirty] = useState(false);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
   const [collapsed, setCollapsed] = useState<Set<string>>(() => {
@@ -61,11 +62,14 @@ export default function App(): React.JSX.Element {
     setEditorDirty(false);
   }
 
-  function openNew(): void {
+  function openNew(folderId?: string): void {
     if (!confirmDiscard()) return;
     setSelectedId(null);
     setCreating(true);
+    setNewFolderId(folderId);
     setEditorDirty(false);
+    // Expand the target folder so the new card is visible once saved.
+    if (folderId && collapsed.has(folderId)) toggleCollapsed(folderId);
   }
 
   function closeEditor(): void {
@@ -154,7 +158,7 @@ export default function App(): React.JSX.Element {
             <button type="button" onClick={addFolder}>
               + Folder
             </button>
-            <button type="button" onClick={openNew}>
+            <button type="button" onClick={() => openNew()}>
               + Snippet
             </button>
           </div>
@@ -181,6 +185,7 @@ export default function App(): React.JSX.Element {
                 count={items.length}
                 collapsed={isCollapsed}
                 onToggle={() => toggleCollapsed(folder.id)}
+                onAddSnippet={() => openNew(folder.id)}
                 onRename={(name) => renameFolder(folder.id, name)}
                 onDelete={() => {
                   if (
@@ -225,8 +230,14 @@ export default function App(): React.JSX.Element {
       <div className="main-pane">
         {editorOpen ? (
           <SnippetEditor
-            key={creating ? 'new' : selectedId}
+            key={creating ? `new:${newFolderId ?? ''}` : selectedId}
             snippet={selected}
+            newFolderId={creating ? newFolderId : undefined}
+            newFolderName={
+              creating && newFolderId
+                ? folders.find((f) => f.id === newFolderId)?.name
+                : undefined
+            }
             settings={settings}
             warning={selected ? warningFor(selected.id) : undefined}
             onSaved={(result) => {

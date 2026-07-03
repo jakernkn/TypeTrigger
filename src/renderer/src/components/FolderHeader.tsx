@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { ChevronIcon, FolderIcon, PencilIcon, XIcon } from './icons';
+import { ChevronIcon, FolderIcon, PencilIcon, PlusIcon, XIcon } from './icons';
 
 interface Props {
   name: string;
   count: number;
   collapsed: boolean;
   onToggle: () => void;
+  onAddSnippet?: () => void;
   onRename?: (name: string) => void;
   onDelete?: () => void;
 }
@@ -15,6 +16,7 @@ export default function FolderHeader({
   count,
   collapsed,
   onToggle,
+  onAddSnippet,
   onRename,
   onDelete,
 }: Props): React.JSX.Element {
@@ -50,6 +52,16 @@ export default function FolderHeader({
           <ChevronIcon size={12} className={`folder-chevron${collapsed ? '' : ' open'}`} />
           <FolderIcon /> {name} <span className="folder-count">({count})</span>
         </span>
+      )}
+      {!editing && onAddSnippet && (
+        <button
+          type="button"
+          className="mini"
+          title="New snippet in this folder"
+          onClick={onAddSnippet}
+        >
+          <PlusIcon size={12} />
+        </button>
       )}
       {!editing && onRename && (
         <button type="button" className="mini" title="Rename folder" onClick={() => setEditing(true)}>
