@@ -1,0 +1,61 @@
+appId: com.jakerankin.typetrigger
+productName: TypeTrigger
+copyright: Copyright © 2026 Jake Rankin
+
+directories:
+  buildResources: build
+  output: dist
+
+# Everything the app needs at runtime is in out/ and resources/; keep the
+# rest of the repo (source, configs, docs) out of the bundle.
+files:
+  - out/**
+  - resources/**
+  - package.json
+  - '!**/.DS_Store'
+
+# asar can't dlopen native addons, and the tray icon is read by path — both
+# must live on the real filesystem, not inside app.asar.
+asarUnpack:
+  - resources/**
+  - '**/*.node'
+  - node_modules/@nut-tree-fork/**
+
+mac:
+  category: public.app-category.productivity
+  icon: build/icon.icns
+  target:
+    - target: dmg
+      arch:
+        - arm64
+    - target: zip
+      arch:
+        - arm64
+  # Signed with a Developer ID for a stable signature (so macOS Accessibility /
+  # Input Monitoring grants survive rebuilds). Hardened runtime + entitlements
+  # are in place so notarization is a one-step add; not notarized yet. See README.
+  identity: 'Jacob Rankin (V7LYDLBUKC)'
+  hardenedRuntime: true
+  entitlements: build/entitlements.mac.plist
+  entitlementsInherit: build/entitlements.mac.plist
+  gatekeeperAssess: false
+  notarize: false
+  extendInfo:
+    # Menu-bar agent: no Dock icon, no app-switcher entry.
+    LSUIElement: true
+    # Shown when the palette asks for Automation permission to restore focus.
+    NSAppleEventsUsageDescription: >-
+      TypeTrigger uses System Events to return focus to the app you were typing
+      in after you pick a snippet from the palette.
+
+dmg:
+  title: ${productName}
+  # A simple two-icon layout: the app and a shortcut to /Applications.
+  contents:
+    - x: 130
+      y: 220
+      type: file
+    - x: 410
+      y: 220
+      type: link
+      path: /Applications

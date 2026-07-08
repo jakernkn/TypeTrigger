@@ -16,6 +16,37 @@ npm run build && npm start
 The app lives in the menu bar (look for the "T" icon). The dashboard opens on
 launch; reopen it any time from the tray menu.
 
+## Building the app
+
+To package TypeTrigger into a real macOS application (`TypeTrigger.app`):
+
+```sh
+npm run build:mac      # -> dist/TypeTrigger-<version>-arm64.dmg + .zip
+# or, for a quick unpacked build without a DMG:
+npm run build:unpack   # -> dist/mac-arm64/TypeTrigger.app
+```
+
+Packaging is handled by [electron-builder](https://www.electron.build)
+(`electron-builder.yml`). The build is **Developer ID signed with hardened
+runtime, but not notarized**. Signing with a stable identity matters here:
+macOS ties Accessibility / Input Monitoring grants to the app's signature, so a
+consistent Developer ID means you grant permission once and it sticks across
+rebuilds (an ad-hoc or unsigned build would re-prompt every time).
+
+Because it isn't notarized, the first open still trips Gatekeeper
+("Apple cannot check it for malicious software"): right-click the app →
+**Open**, or run `xattr -dr com.apple.quarantine /Applications/TypeTrigger.app`.
+
+Drag `TypeTrigger.app` from the DMG into `/Applications`. Because keystroke
+simulation is gated by macOS privacy, grant **TypeTrigger** (not Electron)
+Accessibility permission on first run — see below.
+
+To distribute to other people without the Gatekeeper prompt, notarize the build:
+hardened runtime and entitlements (`build/entitlements.mac.plist`) are already
+in place, so set `notarize: true` in `electron-builder.yml` and provide Apple
+credentials (`APPLE_ID` + `APPLE_APP_SPECIFIC_PASSWORD` + `APPLE_TEAM_ID`, or an
+App Store Connect API key) at build time.
+
 ## First-run permissions (important)
 
 TypeTrigger simulates keystrokes, which macOS gates behind
